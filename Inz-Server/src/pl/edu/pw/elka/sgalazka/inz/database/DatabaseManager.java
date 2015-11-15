@@ -25,17 +25,24 @@ public class DatabaseManager {
         entityManager.close();
     }
 
-    public void add(Product product){
+    public boolean add(Product product){
         try{
-            entityManager.getTransaction().begin();
-            product = entityManager.merge(product);
+            if(!entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().begin();
+            }
+            entityManager.persist(product);
             entityManager.getTransaction().commit();
-            System.out.println("added");
+
+            Log.d("Added to database: "+product.getName());
+
         }
         catch(Exception e){
             entityManager.getTransaction().rollback();
-            System.out.println("can't add");
+            System.out.println(e);
+            Log.e("Cannot add to database");
+            return false;
         }
+        return true;
     }
     public List<Product> findByName(String name){
         //todo
@@ -44,7 +51,9 @@ public class DatabaseManager {
     public Product findByCode(int code){
         Product product;
         try {
-            entityManager.getTransaction().begin();
+            if(!entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().begin();
+            }
             List<Product> list = entityManager
                     .createQuery("from PRODUCT where id=" + code).getResultList();
             if(list.isEmpty())
@@ -60,7 +69,9 @@ public class DatabaseManager {
     }
     public List<Product> getAllProducts(){
         try{
-            entityManager.getTransaction().begin();
+            if(!entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().begin();
+            }
             List<Product> list = entityManager
                     .createQuery("from Product").getResultList();
             if(!list.isEmpty())
@@ -72,5 +83,21 @@ public class DatabaseManager {
         System.out.println("brak tabeli: product");
         Log.e("brak tabeli: product");
         return null;
+    }
+    public void delete(int name){
+        try {
+            if(!entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().begin();
+            }
+            Product product = (Product) entityManager.find(Product.class, name);
+            Log.d("EEntity manager, delete:"+product.getName());
+            entityManager.remove(product);
+            entityManager.getTransaction().commit();
+            Log.d("Deleted name: "+name);
+        } catch (Exception e) {
+            entityManager.getTransaction().rollback();
+            System.out.println(e);
+            Log.e("Cannot delete: "+name);
+        }
     }
 }

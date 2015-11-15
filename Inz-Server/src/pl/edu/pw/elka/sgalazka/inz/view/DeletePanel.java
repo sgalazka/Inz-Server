@@ -10,26 +10,23 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.*;
-import java.util.List;
 
 /**
- * Created by ga��zka on 2015-10-16.
+ * Created by gałązka on 2015-11-14.
  */
-public class ShowAllPanel extends JPanel {
-    private JTable jTable;
+public class DeletePanel extends JPanel{
+
     private JButton button;
     private String columns[] = {"id", "barcode", "quantity", "name"};
     private DefaultTableModel tableModel;
+    private JTable jTable;
 
-    ShowAllPanel(JPanel cardLayout) {
+    DeletePanel(JPanel cardLayout) {
+
         jTable = new JTable();
-        tableModel = new DefaultTableModel();
+
         setLayout(new BorderLayout());
         button = new JButton("wroc");
-        List<Product> list = DatabaseManager.getInstance().getAllProducts();
 
         fillJTable();
 
@@ -51,22 +48,31 @@ public class ShowAllPanel extends JPanel {
                 cl.show(cardLayout, "databasePanel");
             }
         });
-        jTable.addMouseListener(new MouseAdapter() {
+        jTable.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent evt) {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 super.mouseClicked(evt);
                 int row = jTable.rowAtPoint(evt.getPoint());
                 int col = jTable.columnAtPoint(evt.getPoint());
                 if (row >= 0 && col >= 0) {
+                    int toDelete = Integer.parseInt((String) jTable.getModel().getValueAt(row, 0));
 
+                    int decision = JOptionPane.showConfirmDialog(null,"Czy na pewno chcesz usunąć produkt o nazwie" +
+                            jTable.getModel().getValueAt(row, 3)+"?","Potwierdzenie",JOptionPane.YES_NO_OPTION);
+
+                    Log.d("Option:"+decision);
+                    if(decision==JOptionPane.OK_OPTION)
+                        DatabaseManager.getInstance().delete(toDelete);
+
+                    tableModel.fireTableDataChanged();
+                    Log.d("to delete:"+toDelete);
                 }
-
             }
         });
         add(button, BorderLayout.SOUTH);
     }
 
-    private void fillJTable() {
+    private void fillJTable(){
         java.util.List<Product> list = DatabaseManager.getInstance().getAllProducts();
         tableModel = new DefaultTableModel(columns, 0);
         for (Product p : list) {
@@ -79,8 +85,7 @@ public class ShowAllPanel extends JPanel {
         }
         jTable.setModel(tableModel);
     }
-
-    public DefaultTableModel getTableModel() {
+    public DefaultTableModel getTableModel(){
         return tableModel;
     }
 }

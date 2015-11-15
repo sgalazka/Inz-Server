@@ -4,6 +4,7 @@ import pl.edu.pw.elka.sgalazka.inz.database.DatabaseManager;
 import pl.edu.pw.elka.sgalazka.inz.database.Product;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -28,7 +29,7 @@ public class AddProductPanel extends JPanel {
 
     private JButton enterButton;
     private JButton backButton;
-    AddProductPanel(JPanel cardLayout){
+    AddProductPanel(JPanel cardLayout, DefaultTableModel model1, DefaultTableModel model2){
         setLayout(new GridLayout(10,1));
 
         backButton = new JButton("wroc");
@@ -73,9 +74,16 @@ public class AddProductPanel extends JPanel {
                 product.setCode(Integer.parseInt(code.getText()));
                 product.setBarcode(barcode.getText());
                 product.setQuantity(Integer.parseInt(quantity.getText()));
-                DatabaseManager.getInstance().add(product);
-                JOptionPane.showMessageDialog(AddProductPanel.this, "Download completed", "Question",
-                        JOptionPane.INFORMATION_MESSAGE);
+                if(DatabaseManager.getInstance().add(product)) {
+                    JOptionPane.showMessageDialog(AddProductPanel.this, "Dodano do bazy", "Question",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    model1.fireTableDataChanged();
+                    model2.fireTableDataChanged();
+                }
+                else {
+                    JOptionPane.showMessageDialog(AddProductPanel.this, "B³¹d!\nNie dodano do bazy", "Question",
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
                 CardLayout cl = (CardLayout)cardLayout.getLayout();
                 cl.show(cardLayout, "databasePanel");
             }
