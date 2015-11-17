@@ -9,7 +9,7 @@ import java.awt.event.WindowEvent;
 import java.util.concurrent.BlockingQueue;
 
 /**
- * Created by ga³¹zka on 2015-10-07.
+ * Created by gaï¿½ï¿½zka on 2015-10-07.
  */
 public class MainWindow implements Runnable {
     private JFrame mainFrame;
@@ -62,7 +62,7 @@ public class MainWindow implements Runnable {
     @Override
     public void run() {
         while (true) {
-            if (!queue.isEmpty()) {
+            //if (!queue.isEmpty()) {
                 try {
                     LogType logType = queue.take();
                     if (logType.getType() == 'I')
@@ -71,11 +71,13 @@ public class MainWindow implements Runnable {
                         logPanel.addText("WARNING:" + logType.getMessage(), logType.getType());
                     else if (logType.getType() == 'E')
                         logPanel.addText("ERROR:  " + logType.getMessage(), logType.getType());
+                    else if (logType.getType() == 'N')
+                        databasePanel.notifyChange();
 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            }
+            //}
         }
     }
 }

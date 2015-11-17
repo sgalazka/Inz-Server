@@ -1,5 +1,6 @@
 package pl.edu.pw.elka.sgalazka.inz.bluetooth;
 
+import pl.edu.pw.elka.sgalazka.inz.database.DatabaseManager;
 import pl.edu.pw.elka.sgalazka.inz.view.Log;
 import pl.edu.pw.elka.sgalazka.inz.view.LogType;
 
@@ -15,7 +16,7 @@ import java.io.InputStreamReader;
 import java.util.concurrent.BlockingQueue;
 
 /**
- * Created by ga³¹zka on 2015-10-08.
+ * Created by gaï¿½ï¿½zka on 2015-10-08.
  */
 public class BluetoothServer implements Runnable {
 
@@ -65,6 +66,7 @@ public class BluetoothServer implements Runnable {
         InputStream inStream=connection.openInputStream();
         in = new BufferedReader(new InputStreamReader(inStream));
 
+
     }
     private void handleMessage(String message){
         if(message.isEmpty() || message.equals("") || message.equals("null")){
@@ -74,7 +76,7 @@ public class BluetoothServer implements Runnable {
             toScanner.add(message);
         }
         else if(message.charAt(0) == 'D'){
-            //wyslij do bazy danych
+            DatabaseManager.getInstance().addFromBluetooth(message);
         }
     }
 }

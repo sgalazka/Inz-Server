@@ -3,7 +3,7 @@ package pl.edu.pw.elka.sgalazka.inz.view;
 import java.util.concurrent.BlockingQueue;
 
 /**
- * Created by ga³¹zka on 2015-10-10.
+ * Created by gaï¿½ï¿½zka on 2015-10-10.
  */
 public class Log {
     private static BlockingQueue<LogType> logQueue;
@@ -28,4 +28,11 @@ public class Log {
         logType.setType('W');
         logQueue.add(logType);
     }
+    public static void n(){
+        LogType logType = new LogType();
+        logType.setMessage("notify");
+        logType.setType('N');
+        logQueue.add(logType);
+    }
+
 }

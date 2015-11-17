@@ -3,12 +3,14 @@ package pl.edu.pw.elka.sgalazka.inz.serial;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 import jssc.SerialPortList;
+import pl.edu.pw.elka.sgalazka.inz.database.DatabaseManager;
+import pl.edu.pw.elka.sgalazka.inz.database.Product;
 import pl.edu.pw.elka.sgalazka.inz.view.Log;
 
 import java.util.concurrent.BlockingQueue;
 
 /**
- * Created by ga³¹zka on 2015-10-17.
+ * Created by gaï¿½ï¿½zka on 2015-10-17.
  */
 public class BarcodeScanner implements Runnable {
 
@@ -52,8 +54,24 @@ public class BarcodeScanner implements Runnable {
 
     private void handleMessage(String message) {
         String args[] = message.split(":");
-        String serialData = args[1] + 0x0D;
-        Log.d("SCANNER: " + args[1] + " " + args[2]);
+        Product product = DatabaseManager.getInstance().findByBarcode(args[1]);
+        if(product==null){
+            Log.e("Barcode: "+args[1]+" not found!");
+            return;
+        }
+
+
+        String temp = product.getCode()+"";
+        int len = temp.length();
+        StringBuilder stringBuilder = new StringBuilder();
+        for(int i=0; i<13-len; i++){
+            stringBuilder.append('0');
+        }
+        stringBuilder.append(temp);
+        String barcode = stringBuilder.toString();
+        String serialData = barcode + 0x0D;
+        Log.d("SCANNER: name: "+product.getName());
+        Log.d("SCANNER: barcode: " + barcode + " ,quantity: " + args[2]);
         try {
             serialPort.writeBytes(serialData.getBytes());
         } catch (SerialPortException ex) {

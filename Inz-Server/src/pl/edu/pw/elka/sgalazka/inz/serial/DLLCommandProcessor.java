@@ -4,9 +4,12 @@ import com.sun.jna.Library;
 import com.sun.jna.Native;
 
 /**
- * Created by ga³¹zka on 2015-11-01.
+ * Created by gaï¿½ï¿½zka on 2015-11-01.
  */
 public class DLLCommandProcessor {
+
+    public final static String databaseFileName = "towarmaxJ.txt";
+
     public interface simpleDLL extends Library {
         simpleDLL INSTANCE = (simpleDLL) Native.loadLibrary("WinIP", simpleDLL.class);
 
@@ -17,7 +20,7 @@ public class DLLCommandProcessor {
 
     public static void readWareDatabase() {
         simpleDLL sdll = simpleDLL.INSTANCE;
-        char err = sdll.__OPSprzed("baza_in.txt", "towarmaxJ.txt");
+        char err = sdll.__OPSprzed("baza_in.txt", databaseFileName);
         System.out.println(err);
     }
 

@@ -7,7 +7,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 /**
- * Created by ga³¹zka on 2015-10-15.
+ * Created by gaï¿½ï¿½zka on 2015-10-15.
  */
 @Entity
 @Table(name = "PRODUCT")
@@ -15,10 +15,10 @@ public class Product implements Serializable {
 
 
     @Id
-    @Column(name = "id")
-    private int code;
     @Column(name = "barcode")
     private String barcode;
+    @Column(name = "code")
+    private int code;
     @Column(name = "quantity")
     private int quantity;
     @Column(name = "name")

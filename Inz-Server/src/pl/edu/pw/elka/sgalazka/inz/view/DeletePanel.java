@@ -4,6 +4,8 @@ import pl.edu.pw.elka.sgalazka.inz.database.DatabaseManager;
 import pl.edu.pw.elka.sgalazka.inz.database.Product;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
@@ -14,7 +16,7 @@ import java.awt.event.ActionListener;
 /**
  * Created by gałązka on 2015-11-14.
  */
-public class DeletePanel extends JPanel{
+public class DeletePanel extends JPanel {
 
     private JButton button;
     private String columns[] = {"id", "barcode", "quantity", "name"};
@@ -33,6 +35,14 @@ public class DeletePanel extends JPanel{
         JScrollPane scrollPane = new JScrollPane(jTable);
 
         add(scrollPane, BorderLayout.CENTER);
+        jTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent event) {
+                // do some actions here, for example
+                // print first column value from selected row
+                Log.w(jTable.getValueAt(jTable.getSelectedRow(), 0).toString());
+                Log.d(event.toString());
+            }
+        });
         tableModel.addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
@@ -57,22 +67,22 @@ public class DeletePanel extends JPanel{
                 if (row >= 0 && col >= 0) {
                     int toDelete = Integer.parseInt((String) jTable.getModel().getValueAt(row, 0));
 
-                    int decision = JOptionPane.showConfirmDialog(null,"Czy na pewno chcesz usunąć produkt o nazwie" +
-                            jTable.getModel().getValueAt(row, 3)+"?","Potwierdzenie",JOptionPane.YES_NO_OPTION);
+                    int decision = JOptionPane.showConfirmDialog(null, "Czy na pewno chcesz usunąć produkt o nazwie" +
+                            jTable.getModel().getValueAt(row, 3) + "?", "Potwierdzenie", JOptionPane.YES_NO_OPTION);
 
-                    Log.d("Option:"+decision);
-                    if(decision==JOptionPane.OK_OPTION)
-                        DatabaseManager.getInstance().delete(toDelete);
+                    Log.d("Option:" + decision);
+                    if (decision == JOptionPane.OK_OPTION)
+                       // DatabaseManager.getInstance().delete(toDelete);
 
                     tableModel.fireTableDataChanged();
-                    Log.d("to delete:"+toDelete);
+                    Log.d("to delete:" + toDelete);
                 }
             }
         });
         add(button, BorderLayout.SOUTH);
     }
 
-    private void fillJTable(){
+    private void fillJTable() {
         java.util.List<Product> list = DatabaseManager.getInstance().getAllProducts();
         tableModel = new DefaultTableModel(columns, 0);
         for (Product p : list) {
@@ -85,7 +95,8 @@ public class DeletePanel extends JPanel{
         }
         jTable.setModel(tableModel);
     }
-    public DefaultTableModel getTableModel(){
+
+    public DefaultTableModel getTableModel() {
         return tableModel;
     }
 }
