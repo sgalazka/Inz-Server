@@ -1,7 +1,7 @@
 package pl.edu.pw.elka.sgalazka.inz.database;
 
-import pl.edu.pw.elka.sgalazka.inz.view.Log;
-import pl.edu.pw.elka.sgalazka.inz.view.MainDatabasePanel;
+import pl.edu.pw.elka.sgalazka.inz.Log.Log;
+import pl.edu.pw.elka.sgalazka.inz.view.ProductsPanel;
 
 import javax.persistence.EntityManager;
 import java.util.List;
@@ -17,8 +17,6 @@ public class DatabaseManager {
     public static DatabaseManager getInstance() {
         if (databaseManager == null) {
             databaseManager = new DatabaseManager();
-           /* Logger.getLogger("org.hibernate").setLevel(Level.INFO);
-       */
         }
         return databaseManager;
     }
@@ -46,20 +44,22 @@ public class DatabaseManager {
         return true;
     }
 
-    public List<Product> findByName(String name) {
-        //todo
-        return null;
-    }
-
-    public Product findByCode(int code) {
+    public Product findByBarcode(String barcode) {
         Product product;
         try {
             if (!entityManager.getTransaction().isActive()) {
                 entityManager.getTransaction().begin();
             }
 
-            List<Product> list = entityManager
-                    .createQuery("from PRODUCT where id=" + code).getResultList();
+            /*List<Product> list = entityManager
+                    .createQuery("select p from Product p where p.barcode='" + barcode + "'", Product.class).getResultList();*/
+
+            List<Product> list = entityManager.createQuery(
+                    "SELECT p FROM Product p WHERE p.barcode = :bcode", Product.class)
+                    .setParameter("bcode", barcode)
+                    .getResultList();
+
+
             if (list.isEmpty())
                 return null;
             product = list.get(0);
@@ -72,7 +72,7 @@ public class DatabaseManager {
         return null;
     }
 
-    public Product findByBarcode(String barcode) {
+    /*public Product findByBarcode(String barcode) {
         try {
             if (!entityManager.getTransaction().isActive()) {
                 entityManager.getTransaction().begin();
@@ -88,7 +88,7 @@ public class DatabaseManager {
             entityManager.getTransaction().rollback();
         }
         return null;
-    }
+    }*/
 
     public List<Product> getAllProducts() {
         try {
@@ -96,11 +96,12 @@ public class DatabaseManager {
                 entityManager.getTransaction().begin();
             }
             List<Product> list = entityManager
-                    .createQuery("from Product").getResultList();
+                    .createQuery("from Product order by id").getResultList();
             if (!list.isEmpty())
                 return list;
             entityManager.getTransaction().commit();
         } catch (Exception e) {
+            e.printStackTrace();
             entityManager.getTransaction().rollback();
         }
         System.out.println("brak tabeli: product");
@@ -108,20 +109,20 @@ public class DatabaseManager {
         return null;
     }
 
-    public boolean delete(String barcode) {
+    public boolean delete(long id) {
         try {
             if (!entityManager.getTransaction().isActive()) {
                 entityManager.getTransaction().begin();
             }
-            Product product = (Product) entityManager.find(Product.class, barcode);
+            Product product = (Product) entityManager.find(Product.class, id);
             Log.d("EEntity manager, delete:" + product.getName());
             entityManager.remove(product);
             entityManager.getTransaction().commit();
-            Log.d("Deleted name: " + barcode);
+            Log.d("Deleted name: " + id);
         } catch (Exception e) {
             entityManager.getTransaction().rollback();
             System.out.println(e);
-            Log.e("Cannot delete: " + barcode);
+            Log.e("Cannot delete: " + id);
             return false;
         }
         return true;
@@ -132,20 +133,18 @@ public class DatabaseManager {
             if (!entityManager.getTransaction().isActive()) {
                 entityManager.getTransaction().begin();
             }
-            Product temp = (Product) entityManager.find(Product.class, product.getBarcode());
+            Product temp = (Product) entityManager.find(Product.class, product.getId());
 
             if (!product.getName().equals(temp.getName()))
                 temp.setName(product.getName());
-            else if (product.getCode() != temp.getCode())
-                temp.setCode(product.getCode());
+            /*else if (product.getCode() != temp.getCode())
+                temp.setCode(product.getCode());*/
             else if (product.getQuantity() != temp.getQuantity())
                 temp.setQuantity(product.getQuantity());
             else if (!product.getBarcode().equals(temp.getBarcode()))
                 temp.setBarcode(product.getBarcode());
 
-
             entityManager.getTransaction().commit();
-
         } catch (Exception e) {
             entityManager.getTransaction().rollback();
             Log.e("Cannot update");
@@ -153,20 +152,87 @@ public class DatabaseManager {
         }
         return true;
     }
-    public boolean addFromBluetooth(String dataString){
+
+    public String getAllAsString() {
+        List<Product> list;
+        try {
+            if (!entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().begin();
+            }
+            list = entityManager
+                    .createQuery("from Product order by name", Product.class).getResultList();
+
+            entityManager.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            entityManager.getTransaction().rollback();
+            return "";
+        }
+        if (!list.isEmpty()) {
+            StringBuilder stringBuilder = new StringBuilder("");
+            for (int i = 0; i < list.size(); i++) {
+                Product product = list.get(i);
+                if (i != 0)
+                    stringBuilder.append(";");
+                stringBuilder.append(product.getName());
+                stringBuilder.append("#");
+                stringBuilder.append(product.getBarcode());
+                stringBuilder.append("#");
+                stringBuilder.append(product.getQuantity());
+            }
+            return stringBuilder.toString();
+        }
+        return "";
+    }
+
+    public String getByQuantityAsString(int quantity) {
+        List<Product> list;
+        try {
+            if (!entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().begin();
+            }
+            list = entityManager.createQuery(
+                    "SELECT p FROM Product p WHERE p.quantity < :quan", Product.class)
+                    .setParameter("quan", quantity)
+                    .getResultList();
+
+            entityManager.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            entityManager.getTransaction().rollback();
+            return "";
+        }
+        if (!list.isEmpty()) {
+            StringBuilder stringBuilder = new StringBuilder("");
+            for (int i = 0; i < list.size(); i++) {
+                Product product = list.get(i);
+                if (i != 0)
+                    stringBuilder.append(";");
+                stringBuilder.append(product.getName());
+                stringBuilder.append("#");
+                stringBuilder.append(product.getBarcode());
+                stringBuilder.append("#");
+                stringBuilder.append(product.getQuantity());
+            }
+            return stringBuilder.toString();
+        }
+        return "";
+    }
+
+    public boolean addFromBluetooth(String dataString) {
         String data[] = dataString.split(":");
         Product product = new Product();
         product.setName(data[1]);
         product.setBarcode(data[2]);
-        product.setCode(Integer.parseInt(data[3]));
+        product.setPrice((int)(Double.parseDouble(data[3].replace(',','.').toString())*100));
+        product.setPackaging(data[6].equals("true") ? 1 : 0);
+        product.setVat(data[5].toUpperCase());
         product.setQuantity(Integer.parseInt(data[4]));
-        Log.d("Adding from bluetooth, name: "+data[1]);
-        boolean ret = add(product);
-        if(ret){
-            //Log.n();
-            MainDatabasePanel.fireNotify();
-        }
 
-        return ret;
+        Log.d("Adding from bluetooth, name: " + data[1]);
+        /*if (ret) {
+            ProductsPanel.fireNotify();
+        }*/
+        return add(product);
     }
 }

@@ -1,7 +1,7 @@
-package pl.edu.pw.elka.sgalazka.inz.view;
+package pl.edu.pw.elka.sgalazka.inz.Log;
 
 /**
- * Created by ga³¹zka on 2015-10-10.
+ * Created by gaï¿½ï¿½zka on 2015-10-10.
  */
 public class LogType {
 

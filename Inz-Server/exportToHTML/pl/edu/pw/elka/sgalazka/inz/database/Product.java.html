@@ -1,0 +1,41 @@
+<html>
+<head>
+<title>Product.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.ln { color: rgb(0,0,0); font-weight: normal; font-style: normal; }
+.s0 { color: rgb(169,183,198); }
+.s1 { color: rgb(106,135,89); }
+.s2 { color: rgb(204,120,50); }
+.s3 { color: rgb(104,151,187); }
+</style>
+</head>
+<BODY BGCOLOR="#2b2b2b">
+<TABLE CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#C0C0C0" >
+<TR><TD><CENTER>
+<FONT FACE="Arial, Helvetica" COLOR="#000000">
+Product.java</FONT>
+</center></TD></TR></TABLE>
+<pre>
+<span class="s0">@Entity 
+@Table(name = </span><span class="s1">&quot;PRODUCT&quot;</span><span class="s0">) 
+@SequenceGenerator(name = </span><span class="s1">&quot;seq&quot;</span><span class="s2">, </span><span class="s0">initialValue = </span><span class="s3">1</span><span class="s2">, </span><span class="s0">allocationSize = </span><span class="s3">1</span><span class="s0">) 
+</span><span class="s2">public class </span><span class="s0">Product </span><span class="s2">implements </span><span class="s0">Serializable { 
+ 
+    @GeneratedValue(strategy=GenerationType.SEQUENCE</span><span class="s2">, </span><span class="s0">generator=</span><span class="s1">&quot;seq&quot;</span><span class="s0">) 
+    @Id 
+    </span><span class="s2">long </span><span class="s0">id</span><span class="s2">;</span><span class="s0"> 
+    @Column(name = </span><span class="s1">&quot;barcode&quot;</span><span class="s2">, </span><span class="s0">unique = </span><span class="s2">true</span><span class="s0">) 
+    </span><span class="s2">private </span><span class="s0">String barcode</span><span class="s2">;</span><span class="s0"> 
+    @Column(name = </span><span class="s1">&quot;quantity&quot;</span><span class="s0">) 
+    </span><span class="s2">private int </span><span class="s0">quantity</span><span class="s2">;</span><span class="s0"> 
+    @Column(name = </span><span class="s1">&quot;name&quot;</span><span class="s0">) 
+    </span><span class="s2">private </span><span class="s0">String name</span><span class="s2">;</span><span class="s0"> 
+    @Column(name = </span><span class="s1">&quot;vat&quot;</span><span class="s0">) 
+    </span><span class="s2">private </span><span class="s0">String vat</span><span class="s2">;</span><span class="s0"> 
+    @Column(name = </span><span class="s1">&quot;packaging&quot;</span><span class="s0">) 
+    </span><span class="s2">private int </span><span class="s0">packaging</span><span class="s2">;</span><span class="s0"> 
+    @Column(name = </span><span class="s1">&quot;price&quot;</span><span class="s0">) 
+    </span><span class="s2">private int </span><span class="s0">price</span><span class="s2">;</span></pre>
+</body>
+</html>

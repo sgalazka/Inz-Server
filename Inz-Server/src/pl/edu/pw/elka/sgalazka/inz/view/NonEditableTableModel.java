@@ -10,7 +10,8 @@ public class NonEditableTableModel extends DefaultTableModel {
     public boolean isCellEditable(int row, int column) {
         return false;
     }
-    public NonEditableTableModel(Object[] columnNames, int rowCount){
+
+    public NonEditableTableModel(Object[] columnNames, int rowCount) {
         super(columnNames, rowCount);
     }
 }

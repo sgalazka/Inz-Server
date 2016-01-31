@@ -1,0 +1,11 @@
+#01	COM11:9600:MUX0:1	3	2016.01.26	14:46	TowarMax	WIN 10.00.2013	baza_in.txt	baza_out.txt
+#0	; program zakonczony bezblednie
+#Alfa 4095 PLU II gen. ver. 03 (identyfikator odczytany z urzadzenia i pliku ECRTBUF.TXT)
+$17
+$0
+$10
+$3
+$13
+$00000	00000
+$3	0	#
+$0000
