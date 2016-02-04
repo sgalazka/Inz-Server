@@ -71,7 +71,7 @@ public class BarcodeScanner implements Runnable {
         Product product = DatabaseManager.getInstance().findByBarcode(args[1]);
         if (product == null) {
             Log.e("Barcode: " + args[1] + " not found!");
-            BluetoothClient.addToSendQueue("N:" + args[1]);
+            BluetoothClient.addToSendQueue("ENF:" + args[1]);
             return false;
         }
         int quantity = product.getQuantity();
@@ -86,31 +86,36 @@ public class BarcodeScanner implements Runnable {
 
         if (sold > quantity) {
             Log.e("Produktu " + args[2] + " o kodzie: " + args[1] + "\n, nie ma w magazynie");
-            BluetoothClient.addToSendQueue("N:" + args[1]);
             newQuantity = 0;
-        }
-        else
+        } else
             newQuantity = quantity - sold;
         StringBuilder toSend = new StringBuilder("29");
         String barcode = "00000" + product.getId();
         String tmpQuantity = "00" + (sold * 1000) + "";
         toSend.append(barcode.substring(barcode.length() - 5));
         toSend.append(tmpQuantity.substring(tmpQuantity.length() - 5));
+        Log.d("Skaner sprawdza cyfrę kontrolną dla: \n" + toSend.toString());
         int checkDigit = EAN13CheckDigit.calculate(toSend.toString());
-        toSend.append(checkDigit+"");
+        toSend.append(checkDigit + "");
 
-        Log.d("Skaner wysyła na kasę: "+toSend.toString());
+        Log.d("Skaner wysyła na kasę: " + toSend.toString());
+        if (newQuantity == 0) {
+            BluetoothClient.addToSendQueue("EZQ:" + args[1]);
+        } else {
+            BluetoothClient.addToSendQueue("BSS");
+        }
 
         String serialData = toSend.toString() + CR + LF;
         Log.d("SCANNER: name: " + product.getName());
         Log.d("SCANNER: barcode: " + barcode + " ,quantity: " + args[2]);
         try {
             serialPort.writeBytes(serialData.getBytes());
-        } catch (SerialPortException ex) {
+        } catch (SerialPortException | NullPointerException ex) {
             System.out.println(ex);
             Log.e("SCANNER: SerialPortException on send");
             return false;
         }
+
 
         product.setQuantity(newQuantity);
         toView.add(ProductsPanel.DATA_CHANGED);

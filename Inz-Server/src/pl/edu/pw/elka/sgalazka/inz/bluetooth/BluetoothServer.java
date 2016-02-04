@@ -49,7 +49,7 @@ public class BluetoothServer implements Runnable {
             while (getRunning()) {
                 try {
                     String lineRead = in.readLine();
-                    Log.d("Serwer otrzymał: "+lineRead);
+                    //Log.d("Serwer otrzymał: "+lineRead);
                     if (lineRead == null || lineRead.isEmpty() || lineRead.equals("null"))
                         break;
 
@@ -115,28 +115,29 @@ public class BluetoothServer implements Runnable {
         }
     }
 
-    public static void setRunning(boolean val){
-        synchronized (lock){
+    public static void setRunning(boolean val) {
+        synchronized (lock) {
             running = val;
         }
     }
 
-    private static boolean getRunning(){
-        synchronized (lock){
+    private static boolean getRunning() {
+        synchronized (lock) {
             return running;
         }
     }
 
-    private void addToDatabase(String msg){
+    private void addToDatabase(String msg) {
 
         Runnable addToDatabaseCallback = new Runnable() {
             @Override
             public void run() {
-                if (DatabaseManager.getInstance().addFromBluetooth(msg))
+                if (DatabaseManager.getInstance().addFromBluetooth(msg)) {
                     toView.add(ProductsPanel.DATA_CHANGED);
-                else {
+                    toClient.add("DAS");
+                } else {
                     String splitted[] = msg.split(":");
-                    toClient.add("EX:"+splitted[1]+":"+splitted[2]);
+                    toClient.add("EEX:" + splitted[1] + ":" + splitted[2]);
                 }
             }
         };
@@ -145,16 +146,15 @@ public class BluetoothServer implements Runnable {
         thread.start();
     }
 
-    private void sendListOfProducts(String msg){
+    private void sendListOfProducts(String msg) {
         Runnable sendListOfProductsCallback = new Runnable() {
             @Override
             public void run() {
                 String splitted[] = msg.split(":");
                 String tmp;
-                if(splitted[1].equals("0")){
+                if (splitted[1].equals("0")) {
                     tmp = DatabaseManager.getInstance().getAllAsString();
-                }
-                else
+                } else
                     tmp = DatabaseManager.getInstance().getByQuantityAsString(Integer.parseInt(splitted[1]));
                 String toSend = new StringBuilder().append(splitted[0]).append(":").append(splitted[1])
                         .append(":").append(tmp).toString();

@@ -23,8 +23,6 @@ public class PositionsPanel extends JPanel implements DataReceiver {
         jTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         setLayout(new BorderLayout());
 
-        //fillJTable();
-
         backButton = new JButton("Wroc");
         JScrollPane scrollPane = new JScrollPane(jTable);
 

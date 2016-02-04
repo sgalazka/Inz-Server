@@ -8,10 +8,9 @@ import com.sun.jna.Native;
  */
 public class DLLCommands {
 
-    public final static String OUTPUT_FILE_NAME = "baza_out.txt";
-    public final static String RECEIPTS_FILE_NAME = "paragony.txt";
+    public final static String OUTPUT_FILE_NAME = "out.txt";
     public final static String CONFIG_FILE_NAME = "KONFIG.txt";
-    public final static String INPUT_FILE_NAME = "baza_in.txt";
+    public final static String INPUT_FILE_NAME = "in.txt";
 
     private final static Object lock = new Object();
 
@@ -26,33 +25,65 @@ public class DLLCommands {
         char __KTowMax(String par1);
 
         char __DrukRap(String par1, String par2);
+
+        char __OPodatek(String par1, String par2);
+
+        char __DrukRapD(String par1, String par2);
     }
 
-    public static void saveWareDatabase() throws UnsatisfiedLinkError {
+    public static int saveWareDatabase() throws UnsatisfiedLinkError {
         synchronized (lock) {
             simpleDLL sdll = simpleDLL.INSTANCE;
             char err = sdll.__ZTowar(CashRegisterCommandProcessor.UPDATED_DATA_FILENAME);
-            System.out.println(err);
+            System.out.println((int)err);
+            return (int)err;
         }
     }
 
-    public static void readWareDatabase() throws UnsatisfiedLinkError {
+    public static int readWareDatabase() throws UnsatisfiedLinkError {
         synchronized (lock) {
             simpleDLL sdll = simpleDLL.INSTANCE;
             char err = sdll.__TowarMax(INPUT_FILE_NAME, OUTPUT_FILE_NAME);
-            System.out.println(err);
+            System.out.println((int)err);
+            return (int)err;
         }
     }
 
-    public static void deleteWareDatabase() throws UnsatisfiedLinkError {
+    public static int deleteWareDatabase() throws UnsatisfiedLinkError {
         synchronized (lock) {
             simpleDLL sdll = simpleDLL.INSTANCE;
             char err = sdll.__KTowMax(INPUT_FILE_NAME);
-            //char err = sdll.__DrukRap(INPUT_FILE_NAME, OUTPUT_FILE_NAME);
-            System.out.println(err);
+            System.out.println((int)err);
+            return (int)err;
         }
     }
 
+    public static int printRaports() throws  UnsatisfiedLinkError {
+        synchronized (lock){
+            simpleDLL sdll = simpleDLL.INSTANCE;
+            char err = sdll.__DrukRap(INPUT_FILE_NAME,OUTPUT_FILE_NAME);
+            System.out.println((int)err);
+            return (int)err;
+        }
+    }
+
+    public static int readVatGroups() throws UnsatisfiedLinkError {
+        synchronized (lock) {
+            simpleDLL sdll = simpleDLL.INSTANCE;
+            char err = sdll.__OPodatek(INPUT_FILE_NAME, OUTPUT_FILE_NAME);
+            System.out.println((int)err);
+            return (int)err;
+        }
+    }
+
+    public static int printDailyRaport() throws UnsatisfiedLinkError {
+        synchronized (lock) {
+            simpleDLL sdll = simpleDLL.INSTANCE;
+            char err = sdll.__DrukRapD(INPUT_FILE_NAME, OUTPUT_FILE_NAME);
+            System.out.println((int)err);
+            return (int)err;
+        }
+    }
 
 }
 

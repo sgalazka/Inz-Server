@@ -60,19 +60,6 @@ public class ProductsPanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
         add(backButton, BorderLayout.SOUTH);
 
-        jTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent event) {
-                //System.out.println(event.toString());
-            }
-        });
-        /*tableModel.addTableModelListener(new TableModelListener() {
-            @Override
-            public void tableChanged(TableModelEvent e) {
-                Log.d("tableChanged");
-                fillJTable();
-                jTable.repaint();
-            }
-        });*/
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

@@ -224,15 +224,17 @@ public class DatabaseManager {
         Product product = new Product();
         product.setName(data[1]);
         product.setBarcode(data[2]);
-        product.setPrice((int)(Double.parseDouble(data[3].replace(',','.').toString())*100));
+        product.setPrice((int)(Double.parseDouble(data[3].replace(',','.'))*100));
         product.setPackaging(data[6].equals("true") ? 1 : 0);
         product.setVat(data[5].toUpperCase());
         product.setQuantity(Integer.parseInt(data[4]));
 
+
+        if(findByBarcode(data[2])!=null){
+            return false;
+        }
         Log.d("Adding from bluetooth, name: " + data[1]);
-        /*if (ret) {
-            ProductsPanel.fireNotify();
-        }*/
+
         return add(product);
     }
 }

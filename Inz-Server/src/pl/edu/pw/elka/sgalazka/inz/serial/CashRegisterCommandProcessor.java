@@ -19,36 +19,37 @@ public class CashRegisterCommandProcessor {
     public final static String WAIT = "wait";
     public final static String NOTIFY = "notify";
     public final static String NOTIFY_PARSED = "notifyParsed";
+    public final static String NOTIFY_VAT = "notifyVat";
     public final static String NO_DLL_ERROR = "noDllError";
     public final static String NO_FILE_ERROR = "noFileError";
+    public final static String NOTIFY_DELETE= "notifyDelete";
+    public final static String DELETE_ERROR = "deleteError";
 
     public final static char CR = 0x0D;
     public final static char LF = 0x0A;
     private static BlockingQueue<String> toView;
 
-    private static boolean saveDatabase(String portName) {
+    private static void saveDatabase(String portName) {
         toView.add(WAIT);
 
         modifyConfigFile(portName);
         Log.d("Zmodyfikowano plik KONFIG");
-
-        /*deleteDatabase();
-        Log.d("Usunięto starą bazę");*/
+        modifyInputFile();
 
         createDatabaseFile();
         Log.d("Zmodyfikowano plik wejsciowy");
-
 
         try {
             DLLCommands.saveWareDatabase();
         } catch (UnsatisfiedLinkError e) {
             toView.add(NOTIFY);
             toView.add(NO_DLL_ERROR);
-            return false;
+            return;
         }
 
+        Log.d("Zapisano bazę danych");
+
         toView.add(NOTIFY);
-        return true;
     }
 
     public static void getParsedData(DataReceiver callback, String portName) {
@@ -193,7 +194,6 @@ public class CashRegisterCommandProcessor {
             e.printStackTrace();
         }
 
-
         t = new StringBuilder("#Alfa 4095 PLU II gen. ver. 03 (identyfikator odczytany z urzadzenia i pliku ECRTBUF.TXT)");
         t.append(CR).append(LF);
         try {
@@ -245,11 +245,115 @@ public class CashRegisterCommandProcessor {
         return true;
     }
 
-    public static void runSaveDatabase(String filename) {
+
+
+    public static void setToViewQueue(BlockingQueue blockingQueue) {
+        toView = blockingQueue;
+    }
+
+    private static void deleteDatabase(String portName){
+        toView.add(WAIT);
+        modifyConfigFile(portName);
+        Log.d("Zmodyfikowano plik KONFIG");
+        modifyInputFile();
+        try{
+            int result = DLLCommands.deleteWareDatabase();
+            if (result!=0){
+                toView.add(DELETE_ERROR);
+                return;
+            }
+        }
+        catch (UnsatisfiedLinkError e){
+            toView.add(NO_DLL_ERROR);
+        }
+        Log.d("Pomyślnie usunięto bazę towarów na kasie");
+        toView.add(NOTIFY_DELETE);
+    }
+
+    private static void getVatGroups(String portname){
+        toView.add(WAIT);
+        modifyConfigFile(portname);
+        modifyInputFile();
+
+        DLLCommands.readVatGroups();
+
+        FileReader input = null;
+        try {
+            input = new FileReader(DLLCommands.OUTPUT_FILE_NAME);
+        } catch (FileNotFoundException e) {
+            Log.e("Brak pliku z grupami VAT!");
+            toView.add(NOTIFY_PARSED);
+            return;
+        }
+
+        FileInputStream fileInputStream = null;
+        try {
+            fileInputStream = new FileInputStream(DLLCommands.OUTPUT_FILE_NAME);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        BufferedReader bufRead = null;
+        try {
+            bufRead = new BufferedReader(new InputStreamReader(fileInputStream, "Cp852"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        String myLine = null;
+
+        List<List<String>> list = new LinkedList<List<String>>();
+        String tmp[] = null;
+
+
+        try {
+            while ((myLine = bufRead.readLine()) != null) {
+                if (myLine.charAt(0) == '$') {
+                    tmp = myLine.split("\t");
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            bufRead.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (tmp!=null && tmp.length!=0){
+            String conc = new StringBuilder(NOTIFY_VAT)
+                    .append(":").append(tmp[0].substring(1, tmp[0].length()))
+                    .append(":").append(tmp[1])
+                    .append(":").append(tmp[2])
+                    .append(":").append(tmp[3])
+                    .append(":").append(tmp[4])
+                    .append(":").append(tmp[5])
+                    .append(":").append(tmp[6]).toString();
+            toView.add(conc);
+        }
+        else
+            toView.add(NO_FILE_ERROR);
+
+    }
+
+
+    public static void runSaveDatabase(String portName) {
         Runnable callback = new Runnable() {
             @Override
             public void run() {
-                saveDatabase(filename);
+                saveDatabase(portName);
+            }
+        };
+        Thread thread = new Thread(callback);
+        thread.start();
+    }
+
+    public static void runDeleteDatabase(String portName) {
+        Runnable callback = new Runnable() {
+            @Override
+            public void run() {
+                deleteDatabase(portName);
             }
         };
         Thread thread = new Thread(callback);
@@ -267,13 +371,14 @@ public class CashRegisterCommandProcessor {
         thread.start();
     }
 
-    public static void setToViewQueue(BlockingQueue blockingQueue) {
-        toView = blockingQueue;
-    }
-
-    private static void deleteDatabase(){
-        modifyInputFile();
-
-        DLLCommands.deleteWareDatabase();
+    public static void runGetVatGroups(String portname) {
+        Runnable callback = new Runnable() {
+            @Override
+            public void run() {
+                getVatGroups(portname);
+            }
+        };
+        Thread thread = new Thread(callback);
+        thread.start();
     }
 }

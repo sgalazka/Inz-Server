@@ -28,7 +28,7 @@ public class MainWindow implements Runnable {
         cards = new JPanel(new CardLayout());
         mainFrame = new JFrame("Inz-Server");
         mainFrame.setLayout(new BorderLayout());
-        logPanel.setMinimumSize(new Dimension(350,0));
+        logPanel.setMinimumSize(new Dimension(350, 0));
         positionsPanel = new PositionsPanel(cards);
         mainPanel = new MainPanel(cards, toScanner, positionsPanel);
         productsPanel = new ProductsPanel(cards);
@@ -59,29 +59,55 @@ public class MainWindow implements Runnable {
     @Override
     public void run() {
         mainPanel.showScannerPortQuestion();
-        while (true){
+        while (true) {
             try {
-                String tmp = queue.take();
-                if(tmp.equals(CashRegisterCommandProcessor.WAIT)){
-                    mainPanel.enableWaitingState();
+                String data = queue.take();
+                String tmp[] = data.split(":");
+
+                switch (tmp[0]) {
+                    case CashRegisterCommandProcessor.WAIT:
+                        mainPanel.enableWaitingState();
+                        break;
+                    case CashRegisterCommandProcessor.NOTIFY:
+                        mainPanel.disableWaitingState();
+                        break;
+                    case CashRegisterCommandProcessor.NO_DLL_ERROR:
+                        mainPanel.disableWaitingState();
+                        JOptionPane.showMessageDialog(mainFrame,
+                                "Program nie może znaleźć pliku WinIP.dll!",
+                                "Brak pliku",
+                                JOptionPane.ERROR_MESSAGE);
+                        break;
+                    case ProductsPanel.DATA_CHANGED:
+                        productsPanel.notifyChange();
+                        break;
+                    case CashRegisterCommandProcessor.NOTIFY_PARSED:
+                        mainPanel.disableWaitingState();
+                        mainPanel.goToPositionsPanel();
+                        break;
+                    case CashRegisterCommandProcessor.NOTIFY_VAT:
+                        mainPanel.disableWaitingState();
+                        VatGroupsDialog vatGroupsDialog = new VatGroupsDialog(new JFrame(), data);
+                        break;
+                    case CashRegisterCommandProcessor.NO_FILE_ERROR:
+                        mainPanel.disableWaitingState();
+                        JOptionPane.showMessageDialog(mainFrame,
+                                "Program nie może połączyć się z kasą",
+                                "Brak pliku",
+                                JOptionPane.ERROR_MESSAGE);
+                        break;
+                    case CashRegisterCommandProcessor.NOTIFY_DELETE:
+                        mainPanel.disableWaitingState();
+                        mainPanel.showDatabaseSave();
+                        break;
+                    case CashRegisterCommandProcessor.DELETE_ERROR:
+                        mainPanel.disableWaitingState();
+                        JOptionPane.showMessageDialog(mainFrame,
+                                "Błąd obsługi kasy fiskalnej",
+                                "Błąd",
+                                JOptionPane.ERROR_MESSAGE);
                 }
-                else if(tmp.equals(CashRegisterCommandProcessor.NOTIFY)){
-                    mainPanel.disableWaitingState();
-                }
-                else if(tmp.equals(CashRegisterCommandProcessor.NO_DLL_ERROR)){
-                    mainPanel.disableWaitingState();
-                    JOptionPane.showMessageDialog(mainFrame,
-                            "Program nie może znaleźć pliku WinIP.dll!",
-                            "Brak pliku",
-                            JOptionPane.ERROR_MESSAGE);
-                }
-                else if(tmp.equals(ProductsPanel.DATA_CHANGED)){
-                    productsPanel.notifyChange();
-                }
-                else if (tmp.equals(CashRegisterCommandProcessor.NOTIFY_PARSED)){
-                    mainPanel.disableWaitingState();
-                    mainPanel.goToPositionsPanel();
-                }
+
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
