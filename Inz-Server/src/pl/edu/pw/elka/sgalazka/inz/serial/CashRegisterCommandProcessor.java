@@ -40,7 +40,7 @@ public class CashRegisterCommandProcessor {
         Log.d("Zmodyfikowano plik wejsciowy");
 
         try {
-            DLLCommands.saveWareDatabase();
+            DLLFunctions.saveWareDatabase();
         } catch (UnsatisfiedLinkError e) {
             toView.add(NOTIFY);
             toView.add(NO_DLL_ERROR);
@@ -59,7 +59,7 @@ public class CashRegisterCommandProcessor {
         modifyInputFile();
 
         try {
-            DLLCommands.readWareDatabase();
+            DLLFunctions.readWareDatabase();
         } catch (UnsatisfiedLinkError e) {
             toView.add(NOTIFY_PARSED);
             toView.add(NO_DLL_ERROR);
@@ -68,7 +68,7 @@ public class CashRegisterCommandProcessor {
 
         FileReader input = null;
         try {
-            input = new FileReader(DLLCommands.OUTPUT_FILE_NAME);
+            input = new FileReader(DLLFunctions.OUTPUT_FILE_NAME);
         } catch (FileNotFoundException e) {
             Log.e("Brak pliku z pozycjami!");
             callback.onDataReceived(null);
@@ -78,7 +78,7 @@ public class CashRegisterCommandProcessor {
 
         FileInputStream fileInputStream = null;
         try {
-            fileInputStream = new FileInputStream(DLLCommands.OUTPUT_FILE_NAME);
+            fileInputStream = new FileInputStream(DLLFunctions.OUTPUT_FILE_NAME);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -126,7 +126,7 @@ public class CashRegisterCommandProcessor {
         File updatedDataFile = null;
         PrintWriter writer = null;
         try {
-            updatedDataFile = new File(DLLCommands.CONFIG_FILE_NAME);
+            updatedDataFile = new File(DLLFunctions.CONFIG_FILE_NAME);
             if (!updatedDataFile.exists()) {
                 updatedDataFile.createNewFile();
             }
@@ -143,7 +143,7 @@ public class CashRegisterCommandProcessor {
         File updatedDataFile = null;
         PrintWriter writer = null;
         try {
-            updatedDataFile = new File(DLLCommands.INPUT_FILE_NAME);
+            updatedDataFile = new File(DLLFunctions.INPUT_FILE_NAME);
             if (!updatedDataFile.exists()) {
                 updatedDataFile.createNewFile();
             }
@@ -257,7 +257,7 @@ public class CashRegisterCommandProcessor {
         Log.d("Zmodyfikowano plik KONFIG");
         modifyInputFile();
         try{
-            int result = DLLCommands.deleteWareDatabase();
+            int result = DLLFunctions.deleteWareDatabase();
             if (result!=0){
                 toView.add(DELETE_ERROR);
                 return;
@@ -275,11 +275,11 @@ public class CashRegisterCommandProcessor {
         modifyConfigFile(portname);
         modifyInputFile();
 
-        DLLCommands.readVatGroups();
+        DLLFunctions.readVatGroups();
 
         FileReader input = null;
         try {
-            input = new FileReader(DLLCommands.OUTPUT_FILE_NAME);
+            input = new FileReader(DLLFunctions.OUTPUT_FILE_NAME);
         } catch (FileNotFoundException e) {
             Log.e("Brak pliku z grupami VAT!");
             toView.add(NOTIFY_PARSED);
@@ -288,7 +288,7 @@ public class CashRegisterCommandProcessor {
 
         FileInputStream fileInputStream = null;
         try {
-            fileInputStream = new FileInputStream(DLLCommands.OUTPUT_FILE_NAME);
+            fileInputStream = new FileInputStream(DLLFunctions.OUTPUT_FILE_NAME);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

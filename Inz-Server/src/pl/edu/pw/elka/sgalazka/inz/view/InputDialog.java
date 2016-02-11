@@ -301,14 +301,11 @@ public class InputDialog extends JDialog {
     }
 
     private void addListeners(){
-        okButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (checkFields()) {
-                    result = true;
-                    InputDialog.this.setVisible(false);
-                    InputDialog.this.dispose();
-                }
+        okButton.addActionListener(e -> {
+            if (checkFields()) {
+                result = true;
+                InputDialog.this.setVisible(false);
+                InputDialog.this.dispose();
             }
         });
         cancelButton.addActionListener(new ActionListener() {
