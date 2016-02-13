@@ -2,6 +2,7 @@ package pl.edu.pw.elka.sgalazka.inz.serial;
 
 import com.sun.jna.Library;
 import com.sun.jna.Native;
+import pl.edu.pw.elka.sgalazka.inz.serial.commands.SaveDatabaseCommand;
 
 /**
  * Created by ga��zka on 2015-11-01.
@@ -30,7 +31,7 @@ public class DLLFunctions {
     public static int saveWareDatabase() throws UnsatisfiedLinkError {
         synchronized (lock) {
             simpleDLL sdll = simpleDLL.INSTANCE;
-            char err = sdll.__ZTowar(CashRegisterCommandProcessor.UPDATED_DATA_FILENAME);
+            char err = sdll.__ZTowar(SaveDatabaseCommand.UPDATED_DATA_FILENAME);
             System.out.println((int)err);
             return (int)err;
         }

@@ -3,7 +3,10 @@ package pl.edu.pw.elka.sgalazka.inz.view;
 import pl.edu.pw.elka.sgalazka.inz.bluetooth.BluetoothServer;
 import pl.edu.pw.elka.sgalazka.inz.database.DatabaseManager;
 import pl.edu.pw.elka.sgalazka.inz.database.EntityManagerUtil;
-import pl.edu.pw.elka.sgalazka.inz.serial.CashRegisterCommandProcessor;
+import pl.edu.pw.elka.sgalazka.inz.serial.commands.CashRegisterCommand;
+import pl.edu.pw.elka.sgalazka.inz.serial.commands.DeleteDatabaseCommand;
+import pl.edu.pw.elka.sgalazka.inz.serial.commands.GetPositionsCommand;
+import pl.edu.pw.elka.sgalazka.inz.serial.commands.GetVatGroupsCommand;
 
 import javax.swing.*;
 import java.awt.*;
@@ -65,13 +68,13 @@ public class MainWindow implements Runnable {
                 String tmp[] = data.split(":");
 
                 switch (tmp[0]) {
-                    case CashRegisterCommandProcessor.WAIT:
+                    case CashRegisterCommand.WAIT:
                         mainPanel.enableWaitingState();
                         break;
-                    case CashRegisterCommandProcessor.NOTIFY:
+                    case CashRegisterCommand.NOTIFY:
                         mainPanel.disableWaitingState();
                         break;
-                    case CashRegisterCommandProcessor.NO_DLL_ERROR:
+                    case CashRegisterCommand.NO_DLL_ERROR:
                         mainPanel.disableWaitingState();
                         JOptionPane.showMessageDialog(mainFrame,
                                 "Program nie może znaleźć pliku WinIP.dll!",
@@ -81,26 +84,26 @@ public class MainWindow implements Runnable {
                     case ProductsPanel.DATA_CHANGED:
                         productsPanel.notifyChange();
                         break;
-                    case CashRegisterCommandProcessor.NOTIFY_PARSED:
+                    case GetPositionsCommand.NOTIFY_PARSED:
                         mainPanel.disableWaitingState();
                         mainPanel.goToPositionsPanel();
                         break;
-                    case CashRegisterCommandProcessor.NOTIFY_VAT:
+                    case GetVatGroupsCommand.NOTIFY_VAT:
                         mainPanel.disableWaitingState();
                         VatGroupsDialog vatGroupsDialog = new VatGroupsDialog(new JFrame(), data);
                         break;
-                    case CashRegisterCommandProcessor.NO_FILE_ERROR:
+                    case CashRegisterCommand.NO_FILE_ERROR:
                         mainPanel.disableWaitingState();
                         JOptionPane.showMessageDialog(mainFrame,
                                 "Program nie może połączyć się z kasą",
                                 "Brak pliku",
                                 JOptionPane.ERROR_MESSAGE);
                         break;
-                    case CashRegisterCommandProcessor.NOTIFY_DELETE:
+                    case DeleteDatabaseCommand.NOTIFY_DELETE:
                         mainPanel.disableWaitingState();
                         mainPanel.showDatabaseSave();
                         break;
-                    case CashRegisterCommandProcessor.DELETE_ERROR:
+                    case DeleteDatabaseCommand.DELETE_ERROR:
                         mainPanel.disableWaitingState();
                         JOptionPane.showMessageDialog(mainFrame,
                                 "Błąd obsługi kasy fiskalnej",
