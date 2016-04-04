@@ -8,6 +8,12 @@ public class LogType {
     private char type;
     private String message;
 
+    public LogType(char type, String message){
+        this.type = type;
+        this.message = message;
+    }
+    public LogType(){}
+
     public char getType() {
         return type;
     }

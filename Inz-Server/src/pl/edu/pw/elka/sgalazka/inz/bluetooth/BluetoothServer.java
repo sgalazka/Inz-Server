@@ -2,7 +2,6 @@ package pl.edu.pw.elka.sgalazka.inz.bluetooth;
 
 import pl.edu.pw.elka.sgalazka.inz.database.DatabaseManager;
 import pl.edu.pw.elka.sgalazka.inz.Log.Log;
-import pl.edu.pw.elka.sgalazka.inz.Log.LogType;
 import pl.edu.pw.elka.sgalazka.inz.view.ProductsPanel;
 
 import javax.bluetooth.RemoteDevice;
@@ -49,7 +48,7 @@ public class BluetoothServer implements Runnable {
             while (getRunning()) {
                 try {
                     String lineRead = in.readLine();
-                    //Log.d("Serwer otrzymał: "+lineRead);
+                    //Log.i("Serwer otrzymał: "+lineRead);
                     if (lineRead == null || lineRead.isEmpty() || lineRead.equals("null"))
                         break;
 
@@ -77,12 +76,11 @@ public class BluetoothServer implements Runnable {
 
         streamConnNotifier = (StreamConnectionNotifier) Connector.open(connectionString);
 
-        Log.d("Bluetooth:" + "Server Started. Waiting for clients to connect...");
+        Log.i("Serwer Bluetooth oczekuje na klientów...");
         connection = streamConnNotifier.acceptAndOpen();
 
         remoteDevice = RemoteDevice.getRemoteDevice(connection);
-        Log.d("Bluetooth:" + "Remote device address: " + remoteDevice.getBluetoothAddress());
-        Log.d("Bluetooth:" + "Remote device name: " + remoteDevice.getFriendlyName(true));
+        Log.i("Serwer Bluetooth łączy się z urządzeniem: "+ remoteDevice.getFriendlyName(true) +" o adresie: " + remoteDevice.getBluetoothAddress());
 
         InputStream inStream = connection.openInputStream();
         in = new BufferedReader(new InputStreamReader(inStream));
@@ -96,7 +94,7 @@ public class BluetoothServer implements Runnable {
         if (message.charAt(0) == 'B') {
             toScanner.add(message);
         } else if (message.charAt(0) == 'D') {
-            Log.d("to database: " + message);
+            Log.i("to database: " + message);
             addToDatabase(message);
 
         } else if (message.equals("start")) {
@@ -105,12 +103,12 @@ public class BluetoothServer implements Runnable {
             client.runClient(remoteDevice);
 
             client.start();
-            Log.d("Otrzymano wiadomosc startowa");
+            Log.i("Otrzymano wiadomosc startowa");
             toClient.add(message);
         } else if (message.equals("HeartBeat")) {
             toClient.add(message);
         } else if (splitted[0].equals("GPL")) {
-            Log.d("sending list of products");
+            Log.i("sending list of products");
             sendListOfProducts(message);
         }
     }

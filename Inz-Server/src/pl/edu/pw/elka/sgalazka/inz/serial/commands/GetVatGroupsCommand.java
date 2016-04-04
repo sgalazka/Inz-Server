@@ -26,7 +26,7 @@ public class GetVatGroupsCommand extends CashRegisterCommand {
 
         DLLFunctions.readVatGroups();
 
-        FileDescriptor fd = openFileToRead(DLLFunctions.OUTPUT_FILE_NAME);
+        ReadFileDescriptor fd = openFileToRead(DLLFunctions.OUTPUT_FILE_NAME);
         if (fd == null) {
             toView.add(NO_FILE_ERROR);
             return;

@@ -40,7 +40,7 @@ public class BluetoothClient extends Thread implements DiscoveryListener {
      * runs a bluetooth client that sends a string to a server and prints the response
      */
     public void runClient(RemoteDevice remoteDevice) throws IOException {
-        Log.d("starting client");
+        Log.i("starting client");
 
         setRunning(true);
 
@@ -122,7 +122,7 @@ public class BluetoothClient extends Thread implements DiscoveryListener {
     }// end method
 
     public void sendMessage(String msg) {
-        //Log.d("Bt client sent: " + msg);
+        //Log.i("Bt client sent: " + msg);
         pWriter.write(msg + "\r\n");
         pWriter.flush();
     }
@@ -148,7 +148,7 @@ public class BluetoothClient extends Thread implements DiscoveryListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Log.d("Client stops running");
+        Log.i("Client stops running");
     }
 
     public static void addToSendQueue(String message) {

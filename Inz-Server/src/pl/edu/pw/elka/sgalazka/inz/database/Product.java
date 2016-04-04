@@ -26,6 +26,8 @@ public class Product implements Serializable {
     private int packaging;
     @Column(name = "price")
     private int price;
+    @Column(name = "code")
+    private int code;
 
 
     public String getBarcode() {
@@ -82,5 +84,13 @@ public class Product implements Serializable {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
     }
 }

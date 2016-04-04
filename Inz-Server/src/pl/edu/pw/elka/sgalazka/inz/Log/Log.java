@@ -14,7 +14,7 @@ public class Log {
 
     private static final Object lock = new Object();
 
-    public static void d(String message) {
+    public static void i(String message) {
         synchronized (lock) {
             LogType logType = new LogType();
             logType.setMessage(message);
@@ -37,6 +37,24 @@ public class Log {
             LogType logType = new LogType();
             logType.setMessage(message);
             logType.setType('W');
+            logQueue.add(logType);
+        }
+    }
+
+    public static void d(String message) {
+        synchronized (lock) {
+            LogType logType = new LogType();
+            logType.setMessage(message);
+            logType.setType('D');
+            logQueue.add(logType);
+        }
+    }
+
+    public static void stopRunning() {
+        synchronized (lock) {
+            LogType logType = new LogType();
+            logType.setMessage("");
+            logType.setType('X');
             logQueue.add(logType);
         }
     }

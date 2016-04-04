@@ -5,18 +5,10 @@ import pl.edu.pw.elka.sgalazka.inz.database.DatabaseManager;
 import pl.edu.pw.elka.sgalazka.inz.database.Product;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.Locale;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Created by ga��zka on 2015-10-10.
@@ -71,27 +63,32 @@ public class ProductsPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                JFrame jFrame = new JFrame();
-                InputDialog inputDialog = new InputDialog(jFrame);
-                boolean result = inputDialog.showDialog();
-                if (result) {
-                    System.out.println("dialog successful " + inputDialog.getVatGroupValue());
-                    Product product = new Product();
-                    product.setName(inputDialog.getNameValue());
-                    product.setQuantity(inputDialog.getQuantityValue());
-                    product.setBarcode(inputDialog.getBarcodeValue());
-                    product.setPackaging(inputDialog.getPackagingValue() ? 1 : 0);
-                    product.setPrice(inputDialog.getPriceValue());
-                    product.setVat(inputDialog.getVatGroupValue() + "");
+                if (DatabaseManager.getInstance().getRowCount() > 4096) {
+                    JOptionPane.showMessageDialog(null, "Baza jest pełna, aby dodać produkt należy usunąć jeden z nich", "Przepełnienie",
+                            JOptionPane.ERROR_MESSAGE);
+                } else {
+                    JFrame jFrame = new JFrame();
+                    InputDialog inputDialog = new InputDialog(jFrame);
+                    boolean result = inputDialog.showDialog();
+                    if (result) {
+                        System.out.println("dialog successful " + inputDialog.getVatGroupValue());
+                        Product product = new Product();
+                        product.setName(inputDialog.getNameValue());
+                        product.setQuantity(inputDialog.getQuantityValue());
+                        product.setBarcode(inputDialog.getBarcodeValue());
+                        product.setPackaging(inputDialog.getPackagingValue() ? 1 : 0);
+                        product.setPrice(inputDialog.getPriceValue());
+                        product.setVat(inputDialog.getVatGroupValue() + "");
 
-                    if (DatabaseManager.getInstance().add(product)) {
-                        notifyChange();
-                        JOptionPane.showMessageDialog(null, "Dodano do bazy", "Question",
-                                JOptionPane.INFORMATION_MESSAGE);
-                        Log.d("successful added to database");
-                    } else {
-                        JOptionPane.showMessageDialog(null, "Błąd!\nNie dodano do bazy", "Question",
-                                JOptionPane.INFORMATION_MESSAGE);
+                        if (DatabaseManager.getInstance().add(product)) {
+                            notifyChange();
+                            JOptionPane.showMessageDialog(null, "Dodano do bazy", "Question",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                            Log.i("successful added to database");
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Błąd!\nNie dodano do bazy", "Question",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                        }
                     }
                 }
             }
@@ -105,9 +102,9 @@ public class ProductsPanel extends JPanel {
                                     jTable.getValueAt(jTable.getSelectedRow(), 0).toString() + "?",
                             "Potwierdzenie", JOptionPane.YES_NO_OPTION);
 
-                    Log.d("Option:" + decision);
+                    Log.i("Option:" + decision);
                     if (decision == JOptionPane.OK_OPTION) {
-                        Log.d("to delete: " + jTable.getValueAt(jTable.getSelectedRow(), 1).toString());
+                        Log.i("to delete: " + jTable.getValueAt(jTable.getSelectedRow(), 1).toString());
                         String bcode = jTable.getValueAt(jTable.getSelectedRow(), 1).toString();
                         Product p = DatabaseManager.getInstance().findByBarcode(bcode);
                         long id = p.getId();
@@ -120,7 +117,7 @@ public class ProductsPanel extends JPanel {
                                     JOptionPane.INFORMATION_MESSAGE);
                         }
                     }
-                    Log.d("to delete:" + jTable.getSelectedRow());
+                    Log.i("to delete:" + jTable.getSelectedRow());
                 }
             }
         });
@@ -168,7 +165,7 @@ public class ProductsPanel extends JPanel {
             temp[1] = p.getBarcode();
             temp[2] = p.getQuantity() + "";
             double tmp = p.getPrice();
-            tmp/=100;
+            tmp /= 100;
             temp[3] = df.format(tmp) + "";
             temp[4] = p.getVat();
             temp[5] = p.getPackaging() == 1 ? "Tak" : "";
@@ -182,7 +179,7 @@ public class ProductsPanel extends JPanel {
             fillJTable();
             jTable.repaint();
             tableModel.fireTableDataChanged();
-            Log.d("productsPanel notified");
+            Log.i("productsPanel notified");
         }
     }
 

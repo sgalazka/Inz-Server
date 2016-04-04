@@ -25,12 +25,12 @@ public class SaveDatabaseCommand extends CashRegisterCommand {
         toView.add(CashRegisterCommand.WAIT);
 
         modifyConfigFile(portName);
-        Log.d("Zmodyfikowano plik KONFIG");
-        modifyInputFile();
-
+        Log.i("Zmodyfikowano plik KONFIG");
+        //modifyInputFile();
+        DatabaseManager.getInstance().packUpId();
         createDatabaseFile();
-        Log.d("Zmodyfikowano plik wejsciowy");
-
+        Log.i("Zmodyfikowano plik wejsciowy");
+/*
         try {
             DLLFunctions.saveWareDatabase();
         } catch (UnsatisfiedLinkError e) {
@@ -39,44 +39,37 @@ public class SaveDatabaseCommand extends CashRegisterCommand {
             return;
         }
 
-        Log.d("Zapisano bazę danych");
-
+        Log.i("Zapisano bazę danych");*/
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         toView.add(CashRegisterCommand.NOTIFY);
     }
 
     private static boolean createDatabaseFile() {
         WriteFileDescriptor fd = openFileToWrite(UPDATED_DATA_FILENAME);
+        if (fd == null)
+            return false;
 
-        Log.d("Utworzono nowy plik z danymi");
+        Log.i("Utworzono nowy plik z danymi");
         List<Product> list = DatabaseManager.getInstance().getAllProducts();
         try {
             writeHeader(fd.writer);
             for (Product product : list) {
-                String number = "00000" + product.getId();
+                String number = "00000" + product.getCode();
                 String name = product.getName().toUpperCase();
                 for (int j = 0; j < 19; j++) {
                     name += " ";
                 }
                 int vatGroup = (int) (product.getVat().toUpperCase().charAt(0)) - 64;
-                StringBuilder line = new StringBuilder();
-                line.append("$");
-                line.append(number.substring(number.length() - 5));
-                line.append('\t');
-                line.append(name.substring(0, 19));
-                line.append('\t');
-                line.append(vatGroup);
-                line.append("\t1\t3\t1\t0\t00000029");
-                line.append(number.substring(number.length() - 5));
-                line.append('\t');
-                line.append(product.getPrice());
-                line.append('\t');
-                line.append(product.getPackaging() == 0 ? 0 : 1);
-                line.append(CR);
-                line.append(LF);
-                fd.writer.write(line.toString());
+                fd.writer.write("$" + number.substring(number.length() - 5) + '\t' + name.substring(0, 19) + '\t'
+                        + vatGroup + "\t1\t3\t1\t0\t00000029" + number.substring(number.length() - 5) + '\t'
+                        + product.getPrice() + '\t' + (product.getPackaging() == 0 ? 0 : 1) + CR + LF);
             }
-            fd.stream.close();
             fd.writer.close();
+            fd.stream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -96,32 +89,4 @@ public class SaveDatabaseCommand extends CashRegisterCommand {
         writer.write(t.toString());
     }
 
-    private static WriteFileDescriptor openFileToWrite(String fileName) {
-        File updatedDataFile;
-        OutputStream outputStream;
-        OutputStreamWriter writer;
-        try {
-            updatedDataFile = new File(fileName);
-            if (!updatedDataFile.exists()) {
-                if (!updatedDataFile.createNewFile())
-                    return null;
-            }
-            outputStream = new FileOutputStream(fileName);
-            writer = new OutputStreamWriter(outputStream, "Cp852");
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-        return new WriteFileDescriptor(outputStream, writer);
-    }
-
-    private class WriteFileDescriptor {
-        public OutputStreamWriter writer;
-        public OutputStream stream;
-
-        public WriteFileDescriptor(OutputStream stream, OutputStreamWriter writer) {
-            this.stream = stream;
-            this.writer = writer;
-        }
-    }
 }

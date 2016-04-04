@@ -19,8 +19,8 @@ public class DeleteDatabaseCommand extends CashRegisterCommand {
     @Override
     void process() {
         toView.add(CashRegisterCommand.WAIT);
-        modifyConfigFile(portName);
-        Log.d("Zmodyfikowano plik KONFIG");
+        /*modifyConfigFile(portName);
+        Log.i("Zmodyfikowano plik KONFIG");
         modifyInputFile();
         try{
             int result = DLLFunctions.deleteWareDatabase();
@@ -32,7 +32,12 @@ public class DeleteDatabaseCommand extends CashRegisterCommand {
         catch (UnsatisfiedLinkError e){
             toView.add(CashRegisterCommand.NO_DLL_ERROR);
         }
-        Log.d("Pomyślnie usunięto bazę towarów na kasie");
+        Log.i("Pomyślnie usunięto bazę towarów na kasie");*/
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         toView.add(NOTIFY_DELETE);
     }
 }

@@ -1,5 +1,6 @@
 package pl.edu.pw.elka.sgalazka.inz.view;
 
+import pl.edu.pw.elka.sgalazka.inz.database.DatabaseManager;
 import pl.edu.pw.elka.sgalazka.inz.serial.CashRegisterCommandProcessor;
 import pl.edu.pw.elka.sgalazka.inz.barcodeScanner.BarcodeScanner;
 
@@ -31,7 +32,7 @@ public class MainPanel extends JPanel {
         JPanel waitPanel = new JPanel(new GridLayout(2, 1));
         JPanel waitGrid = new JPanel(new BorderLayout());
         parseDataButton = new JButton("Zapisz baze do kasy");
-        showDataButton = new JButton("Pokaz pozycje na kasie");
+        showDataButton = new JButton("Pokaz pozycje w kasie");
         databaseButton = new JButton("Zarzadzaj baza towarow");
         scannerPortButton = new JButton("Ustaw port skanera");
         showGroupsButton = new JButton("Pokaż grupy podatkowe VAT");
@@ -55,16 +56,12 @@ public class MainPanel extends JPanel {
         inner.add(waitLabel);
         inner.add(progressBar);
         grid.add(inner, BorderLayout.CENTER);
-
-       /* progressBar.setIndeterminate(true);
-        progressBar.setVisible(false);
-        waitGrid.add(waitLabel);
-        waitGrid.add(progressBar);
-        waitPanel.add(waitGrid, BorderLayout.SOUTH);*/
+//        grid.setBackground(new Color(40));
+//
+//        setBackground(new Color(40));
         progressBar.setIndeterminate(true);
         progressBar.setVisible(false);
         add(grid, BorderLayout.CENTER);
-        //add(waitPanel, BorderLayout.SOUTH);
 
         databaseButton.addActionListener(new ActionListener() {
             @Override
@@ -84,7 +81,7 @@ public class MainPanel extends JPanel {
                     String selectedString = selected.toString();
                     CashRegisterCommandProcessor.runGetParsedData(positionsPanel, selectedString);
                 } else {
-                    //CashRegisterCommandProcessor.runGetParsedData(positionsPanel, "COM12");
+                    CashRegisterCommandProcessor.runGetParsedData(positionsPanel, "COM12");
                     System.out.println("User cancelled");
                 }
 
@@ -106,6 +103,7 @@ public class MainPanel extends JPanel {
                     String selectedString = selected.toString();
                     CashRegisterCommandProcessor.runDeleteDatabase(selectedString);
                 } else {
+                    CashRegisterCommandProcessor.runDeleteDatabase("COM12");
                     System.out.println("User cancelled");
                 }
             }
@@ -183,6 +181,7 @@ public class MainPanel extends JPanel {
             String selectedString = selected.toString();
             CashRegisterCommandProcessor.runSaveDatabase(selectedString);
         } else {
+            CashRegisterCommandProcessor.runSaveDatabase("COM13");
             System.out.println("User cancelled");
         }
     }

@@ -23,7 +23,7 @@ public class BarcodeValidator extends AbstractValidator  {
             return false;
         }
         else if(!tmp.matches("^\\d{13}$")){
-            setMessage("Kod kreskowy mus mieć 13 znaków");
+            setMessage("Kod kreskowy musi mieć 13 znaków");
             return false;
         }
         return true;

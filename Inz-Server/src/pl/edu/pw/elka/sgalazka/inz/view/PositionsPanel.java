@@ -39,7 +39,7 @@ public class PositionsPanel extends JPanel implements DataReceiver {
     }
 
     public boolean showData(List<List<String>> list) {
-        Log.d("PositionsPanel showdata");
+        Log.i("PositionsPanel showdata");
         if(list == null){
             return false;
         }

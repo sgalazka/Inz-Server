@@ -13,11 +13,11 @@ import java.util.concurrent.BlockingQueue;
  */
 public abstract class CashRegisterCommand implements Runnable {
 
-
     public final static String WAIT = "wait";
     public final static String NOTIFY = "notify";
     public final static String NO_DLL_ERROR = "noDllError";
     public final static String NO_FILE_ERROR = "noFileError";
+    public final static String FILE_ENCODING = "Cp852";
     protected final static char CR = 0x0D;
     protected final static char LF = 0x0A;
     protected static BlockingQueue<String> toView;
@@ -42,7 +42,7 @@ public abstract class CashRegisterCommand implements Runnable {
         process();
     }
 
-    protected static void modifyConfigFile(String portname) {
+    protected static void modifyConfigFile(String portName) {
         File updatedDataFile = null;
         PrintWriter writer = null;
         try {
@@ -50,15 +50,16 @@ public abstract class CashRegisterCommand implements Runnable {
             if (!updatedDataFile.exists()) {
                 updatedDataFile.createNewFile();
             }
-            writer = new PrintWriter(updatedDataFile, "UTF-8");
+            writer = new PrintWriter(updatedDataFile, FILE_ENCODING);
         } catch (IOException e) {
             e.printStackTrace();
             return;
         }
-        writer.print("$01\t" + portname + ":9600:MUX0:1\t3");
+        writer.print("$01\t" + portName + ":9600:MUX0:1\t3");
         writer.close();
     }
 
+    @SuppressWarnings("all")
     protected static void modifyInputFile() {
         File updatedDataFile = null;
         PrintWriter writer = null;
@@ -67,7 +68,7 @@ public abstract class CashRegisterCommand implements Runnable {
             if (!updatedDataFile.exists()) {
                 updatedDataFile.createNewFile();
             }
-            writer = new PrintWriter(updatedDataFile, "UTF-8");
+            writer = new PrintWriter(updatedDataFile, FILE_ENCODING);
         } catch (IOException e) {
             e.printStackTrace();
             return;
@@ -76,7 +77,8 @@ public abstract class CashRegisterCommand implements Runnable {
         writer.close();
     }
 
-    protected FileDescriptor openFileToRead(@NotNull String name) {
+    //@SuppressWarnings("unused")
+    protected ReadFileDescriptor openFileToRead(@NotNull String name) {
         FileReader fileReader;
         FileInputStream fileInputStream;
         BufferedReader bufferedReader;
@@ -94,20 +96,49 @@ public abstract class CashRegisterCommand implements Runnable {
             return null;
         }
         try {
-            bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream, "Cp852"));
+            bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream, FILE_ENCODING));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
             Log.e("Zły format pliku: " + name);
             return null;
         }
-        return new FileDescriptor(fileInputStream, bufferedReader);
+        return new ReadFileDescriptor(fileInputStream, bufferedReader);
     }
 
-    protected class FileDescriptor {
+    protected static WriteFileDescriptor openFileToWrite(@NotNull String fileName) {
+        File updatedDataFile;
+        OutputStream outputStream;
+        OutputStreamWriter writer;
+        try {
+            updatedDataFile = new File(fileName);
+            if (!updatedDataFile.exists()) {
+                if (!updatedDataFile.createNewFile())
+                    return null;
+            }
+            outputStream = new FileOutputStream(fileName);
+            writer = new OutputStreamWriter(outputStream, FILE_ENCODING);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return new WriteFileDescriptor(outputStream, writer);
+    }
+
+    protected static class WriteFileDescriptor {
+        public OutputStreamWriter writer;
+        public OutputStream stream;
+
+        public WriteFileDescriptor(@NotNull OutputStream stream, @NotNull OutputStreamWriter writer) {
+            this.stream = stream;
+            this.writer = writer;
+        }
+    }
+
+    protected class ReadFileDescriptor {
         public FileInputStream fileInputStream;
         public BufferedReader bufferedReader;
 
-        public FileDescriptor(FileInputStream fileInputStream, BufferedReader bufferedReader) {
+        public ReadFileDescriptor(@NotNull FileInputStream fileInputStream, @NotNull BufferedReader bufferedReader) {
             this.fileInputStream = fileInputStream;
             this.bufferedReader = bufferedReader;
         }

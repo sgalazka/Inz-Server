@@ -4,6 +4,9 @@ import pl.edu.pw.elka.sgalazka.inz.serial.DLLFunctions;
 import pl.edu.pw.elka.sgalazka.inz.view.DataReceiver;
 
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -25,14 +28,14 @@ public class GetPositionsCommand extends CashRegisterCommand {
         modifyConfigFile(portName);
         modifyInputFile();
 
-        try {
+        /*try {
             DLLFunctions.readWareDatabase();
         } catch (UnsatisfiedLinkError e) {
             toView.add(CashRegisterCommand.NO_DLL_ERROR);
             dataReceiver.onDataReceived(null);
-        }
+        }*/
 
-        FileDescriptor fd = openFileToRead(DLLFunctions.OUTPUT_FILE_NAME);
+        ReadFileDescriptor fd = openFileToRead(DLLFunctions.OUTPUT_FILE_NAME);
         if (fd == null) {
             toView.add(NO_FILE_ERROR);
             return;
@@ -49,7 +52,11 @@ public class GetPositionsCommand extends CashRegisterCommand {
                     inner.add(tab[1]);
                     inner.add(tab[7]);
                     inner.add(vat + "");
-                    inner.add(tab[8]);
+
+                    BigDecimal tmp = new BigDecimal(tab[8]);
+                    tmp = tmp.divide(new BigDecimal(100));
+                    inner.add(tmp.setScale(2, RoundingMode.CEILING).toString());
+
                     inner.add(tab[9].equals("0") ? "" : "Tak");
                     list.add(inner);
                 }

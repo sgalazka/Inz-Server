@@ -64,7 +64,7 @@ public class InputDialog extends JDialog {
         initializeControls();
 
         setSize(new Dimension(350, 500));
-        setMinimumSize(new Dimension(350,500));
+        setMinimumSize(new Dimension(350, 500));
         setLayout(new BorderLayout());
 
         initializeNamePanel();
@@ -100,7 +100,7 @@ public class InputDialog extends JDialog {
         quantity.setText(product.getQuantity() + "");
         double tmp = Double.parseDouble(product.getPrice() + "");
         tmp /= 100;
-        price.setText((tmp + "").replace('.',','));
+        price.setText((tmp + "").replace('.', ','));
         vatGroup.setSelectedIndex(product.getVat().charAt(0) - 65);
         packaging.setSelected(product.getPackaging() != 0);
     }
@@ -140,7 +140,7 @@ public class InputDialog extends JDialog {
     public int getPriceValue() {
         BigDecimal tmp = new BigDecimal(price.getText());
         tmp = tmp.multiply(new BigDecimal(100));
-        return  tmp.intValue();
+        return tmp.intValue();
     }
 
     public char getVatGroupValue() {
@@ -203,7 +203,7 @@ public class InputDialog extends JDialog {
                 price.setText(temp);
             }
 
-            if (Double.parseDouble(price.getText()) == 0) {
+            if (Double.parseDouble(price.getText().replaceAll("\\s", "")) == 0) {
                 JOptionPane.showMessageDialog(null, "Cena nie może wynosić 0", "Błąd",
                         JOptionPane.WARNING_MESSAGE);
                 return false;
@@ -212,7 +212,7 @@ public class InputDialog extends JDialog {
         return true;
     }
 
-    private void initializeNamePanel(){
+    private void initializeNamePanel() {
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
@@ -227,7 +227,7 @@ public class InputDialog extends JDialog {
         namePanel.add(nameErrorLabel, c);
     }
 
-    private void initializeBarcodePanel(){
+    private void initializeBarcodePanel() {
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
@@ -242,7 +242,7 @@ public class InputDialog extends JDialog {
         barcodePanel.add(barcodeErrorLabel, c);
     }
 
-    private void initializeQuantityPanel(){
+    private void initializeQuantityPanel() {
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
@@ -257,7 +257,7 @@ public class InputDialog extends JDialog {
         quantityPanel.add(quantityErrorLabel, c);
     }
 
-    private void initializePricePanel(){
+    private void initializePricePanel() {
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
@@ -272,7 +272,7 @@ public class InputDialog extends JDialog {
         pricePanel.add(priceErrorLabel, c);
     }
 
-    private void initializeControls(){
+    private void initializeControls() {
         NumberFormat intFormat = DecimalFormat.getInstance(Locale.GERMAN);
         intFormat.setMaximumFractionDigits(0);
 
@@ -293,19 +293,22 @@ public class InputDialog extends JDialog {
         cancelButton = new JButton("Anuluj");
     }
 
-    private void initializeVerifiers(){
+    private void initializeVerifiers() {
         name.setInputVerifier(new NameValidator(name, nameErrorLabel));
         barcode.setInputVerifier(new BarcodeValidator(barcode, barcodeErrorLabel));
         quantity.setInputVerifier(new QuantityValidator(quantity, quantityErrorLabel));
         price.setInputVerifier(new PriceValidator(price, priceErrorLabel));
     }
 
-    private void addListeners(){
-        okButton.addActionListener(e -> {
-            if (checkFields()) {
-                result = true;
-                InputDialog.this.setVisible(false);
-                InputDialog.this.dispose();
+    private void addListeners() {
+        okButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (InputDialog.this.checkFields()) {
+                    result = true;
+                    InputDialog.this.setVisible(false);
+                    InputDialog.this.dispose();
+                }
             }
         });
         cancelButton.addActionListener(new ActionListener() {

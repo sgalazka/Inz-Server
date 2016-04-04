@@ -90,15 +90,15 @@ public class BarcodeScanner implements Runnable {
         } else
             newQuantity = quantity - sold;
         StringBuilder toSend = new StringBuilder("29");
-        String barcode = "00000" + product.getId();
+        String barcode = "00000" + product.getCode();
         String tmpQuantity = "00" + (sold * 1000) + "";
         toSend.append(barcode.substring(barcode.length() - 5));
         toSend.append(tmpQuantity.substring(tmpQuantity.length() - 5));
-        Log.d("Skaner sprawdza cyfrę kontrolną dla: \n" + toSend.toString());
+        Log.i("Skaner sprawdza cyfrę kontrolną dla: \n" + toSend.toString());
         int checkDigit = EAN13CheckDigit.calculate(toSend.toString());
         toSend.append(checkDigit + "");
 
-        Log.d("Skaner wysyła na kasę: " + toSend.toString());
+        Log.i("Skaner wysyła na kasę: " + toSend.toString());
         if (newQuantity == 0) {
             BluetoothClient.addToSendQueue("EZQ:" + args[1]);
         } else {
@@ -106,8 +106,8 @@ public class BarcodeScanner implements Runnable {
         }
 
         String serialData = toSend.toString() + CR + LF;
-        Log.d("SCANNER: name: " + product.getName());
-        Log.d("SCANNER: barcode: " + barcode + " ,quantity: " + args[2]);
+        Log.i("SCANNER: name: " + product.getName());
+        Log.i("SCANNER: barcode: " + barcode + " ,quantity: " + args[2]);
         try {
             serialPort.writeBytes(serialData.getBytes());
         } catch (SerialPortException | NullPointerException ex) {
@@ -131,7 +131,7 @@ public class BarcodeScanner implements Runnable {
         if (DatabaseManager.getInstance().add(product)) {
             toView.add(ProductsPanel.DATA_CHANGED);
             BluetoothClient.addToSendQueue("A:" + args[1]);
-            Log.d("Dodano do bazy: " + args[1] + ", ilosc: " + Integer.parseInt(args[4]));
+            Log.i("Dodano do bazy: " + args[1] + ", ilosc: " + Integer.parseInt(args[4]));
         } else {
             BluetoothClient.addToSendQueue("DA:" + args[1]);
         }
@@ -158,6 +158,6 @@ public class BarcodeScanner implements Runnable {
             Log.e("SCANNER: SerialPortException on open");
             return;
         }
-        Log.d("Scanner opened port: " + portName);
+        Log.i("Scanner opened port: " + portName);
     }
 }

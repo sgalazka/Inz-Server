@@ -1,5 +1,6 @@
 package pl.edu.pw.elka.sgalazka.inz.view;
 
+import pl.edu.pw.elka.sgalazka.inz.Log.Log;
 import pl.edu.pw.elka.sgalazka.inz.bluetooth.BluetoothServer;
 import pl.edu.pw.elka.sgalazka.inz.database.DatabaseManager;
 import pl.edu.pw.elka.sgalazka.inz.database.EntityManagerUtil;
@@ -24,20 +25,25 @@ public class MainWindow implements Runnable {
     private ProductsPanel productsPanel;
     private PositionsPanel positionsPanel;
     private BlockingQueue<String> queue;
+    private static final String STOP = "stop";
 
     public MainWindow(JPanel logPanel, BlockingQueue<String> queue, BlockingQueue<String> toScanner) {
         this.queue = queue;
+        Log.e("Przykładowy błąd");
+        Log.w("Przykładowe ostrzeżenie");
+        Log.d("Przykładowy debug");
+        Log.i("Przykładowa informacja");
         //this.toScanner = toScanner;
         cards = new JPanel(new CardLayout());
         mainFrame = new JFrame("Inz-Server");
         mainFrame.setLayout(new BorderLayout());
         logPanel.setMinimumSize(new Dimension(350, 0));
+        logPanel.setMaximumSize(new Dimension(500, 100));
         positionsPanel = new PositionsPanel(cards);
         mainPanel = new MainPanel(cards, toScanner, positionsPanel);
         productsPanel = new ProductsPanel(cards);
         mainFrame.setSize(new Dimension(900, 700));
         mainFrame.setMinimumSize(new Dimension(750, 300));
-        mainFrame.setBackground(new Color(40));
         cards.add(mainPanel, "mainPanel");
         cards.add(productsPanel, "databasePanel");
         cards.add(positionsPanel, "positionsPanel");
@@ -51,6 +57,7 @@ public class MainWindow implements Runnable {
             @Override
             public void windowClosing(WindowEvent e) {
                 System.out.println("Closed");
+                Log.stopRunning();
                 DatabaseManager.getInstance().endTransaction();
                 EntityManagerUtil.closeConnection();
                 BluetoothServer.setRunning(false);
@@ -62,7 +69,8 @@ public class MainWindow implements Runnable {
     @Override
     public void run() {
         mainPanel.showScannerPortQuestion();
-        while (true) {
+        boolean running = true;
+        while (running) {
             try {
                 String data = queue.take();
                 String tmp[] = data.split(":");
@@ -109,8 +117,11 @@ public class MainWindow implements Runnable {
                                 "Błąd obsługi kasy fiskalnej",
                                 "Błąd",
                                 JOptionPane.ERROR_MESSAGE);
+                        break;
+                    case STOP:
+                        running = false;
+                        break;
                 }
-
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
