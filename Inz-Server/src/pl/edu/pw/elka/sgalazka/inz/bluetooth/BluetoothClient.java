@@ -149,6 +149,7 @@ public class BluetoothClient extends Thread implements DiscoveryListener {
             e.printStackTrace();
         }
         Log.i("Client stops running");
+        System.out.println("Client stops running");
     }
 
     public static void addToSendQueue(String message) {

@@ -1,6 +1,7 @@
 package pl.edu.pw.elka.sgalazka.inz.view;
 
 import pl.edu.pw.elka.sgalazka.inz.Log.Log;
+import pl.edu.pw.elka.sgalazka.inz.barcodeScanner.BarcodeScanner;
 import pl.edu.pw.elka.sgalazka.inz.bluetooth.BluetoothServer;
 import pl.edu.pw.elka.sgalazka.inz.database.DatabaseManager;
 import pl.edu.pw.elka.sgalazka.inz.database.EntityManagerUtil;
@@ -58,9 +59,11 @@ public class MainWindow implements Runnable {
             public void windowClosing(WindowEvent e) {
                 System.out.println("Closed");
                 Log.stopRunning();
+                toScanner.add(BarcodeScanner.STOP_RUNNING);
                 DatabaseManager.getInstance().endTransaction();
                 EntityManagerUtil.closeConnection();
                 BluetoothServer.setRunning(false);
+                queue.add(STOP);
                 e.getWindow().dispose();
             }
         });
@@ -126,6 +129,7 @@ public class MainWindow implements Runnable {
                 e.printStackTrace();
             }
         }
+        System.out.println("MainWindow stops running");
     }
 
 

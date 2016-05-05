@@ -25,7 +25,7 @@ public class BluetoothServer implements Runnable {
     private StreamConnectionNotifier streamConnNotifier;
     private RemoteDevice remoteDevice;
     private BluetoothClient client;
-    private StreamConnection connection;
+    private static StreamConnection connection;
     private static boolean running;
     private final static Object lock = new Object();
 
@@ -48,7 +48,7 @@ public class BluetoothServer implements Runnable {
             while (getRunning()) {
                 try {
                     String lineRead = in.readLine();
-                    //Log.i("Serwer otrzymał: "+lineRead);
+                    Log.i("Serwer otrzymał: "+lineRead);
                     if (lineRead == null || lineRead.isEmpty() || lineRead.equals("null"))
                         break;
 
@@ -67,6 +67,7 @@ public class BluetoothServer implements Runnable {
                 e.printStackTrace();
             }
         }
+        System.out.println("Server stops running");
     }
 
     private void startServer() throws IOException {
@@ -96,12 +97,9 @@ public class BluetoothServer implements Runnable {
         } else if (message.charAt(0) == 'D') {
             Log.i("to database: " + message);
             addToDatabase(message);
-
         } else if (message.equals("start")) {
             client = new BluetoothClient(toClient);
-
             client.runClient(remoteDevice);
-
             client.start();
             Log.i("Otrzymano wiadomosc startowa");
             toClient.add(message);
@@ -116,6 +114,11 @@ public class BluetoothServer implements Runnable {
     public static void setRunning(boolean val) {
         synchronized (lock) {
             running = val;
+            try {
+                connection.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -139,7 +142,6 @@ public class BluetoothServer implements Runnable {
                 }
             }
         };
-
         Thread thread = new Thread(addToDatabaseCallback);
         thread.start();
     }
@@ -154,6 +156,10 @@ public class BluetoothServer implements Runnable {
                     tmp = DatabaseManager.getInstance().getAllAsString();
                 } else
                     tmp = DatabaseManager.getInstance().getByQuantityAsString(Integer.parseInt(splitted[1]));
+                if(tmp.isEmpty()){
+                    BluetoothClient.addToSendQueue("ERR");
+                    return;
+                }
                 String toSend = new StringBuilder().append(splitted[0]).append(":").append(splitted[1])
                         .append(":").append(tmp).toString();
                 System.out.println(toSend);
@@ -163,5 +169,4 @@ public class BluetoothServer implements Runnable {
         Thread thread = new Thread(sendListOfProductsCallback);
         thread.start();
     }
-
 }

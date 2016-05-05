@@ -1,5 +1,6 @@
 package pl.edu.pw.elka.sgalazka.inz.Log.viewLog;
 
+import pl.edu.pw.elka.sgalazka.inz.Log.Log;
 import pl.edu.pw.elka.sgalazka.inz.Log.LogType;
 
 import javax.swing.*;
@@ -138,6 +139,8 @@ public class LogPanel extends JPanel implements Runnable {
         while (true) {
             try {
                 LogType logType = queue.take();
+                if (logType.getType()=='X')
+                    break;
                 DateFormat dateFormat = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
                 Date date = new Date();
                 String temp = dateFormat.format(date);
@@ -148,6 +151,7 @@ public class LogPanel extends JPanel implements Runnable {
                 e.printStackTrace();
             }
         }
+        System.out.println("Log stops running");
     }
 
     private void printToFile(boolean isAutomatic) throws IOException {

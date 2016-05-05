@@ -20,6 +20,7 @@ public class BarcodeScanner implements Runnable {
     private BlockingQueue<String> toView;
     private SerialPort serialPort = null;
     public final static String INITIALIZE = "initialize";
+    public final static String STOP_RUNNING = "stop_running";
     private final char CR = 0x0D;
     private final char LF = 0x0A;
 
@@ -40,29 +41,28 @@ public class BarcodeScanner implements Runnable {
     @Override
     public void run() {
         while (true) {
-
             try {
                 String message = fromBluetooth.take();
-                //if (serialPort != null && serialPort.isOpened())
-                handleMessage(message);
+                if (!handleMessage(message))
+                    break;
             } catch (InterruptedException e) {
                 e.printStackTrace();
-
             }
         }
+        System.out.println("Scanner stops running");
     }
 
-    private void handleMessage(String message) {
+    private boolean handleMessage(String message) {
         String args[] = message.split(":");
 
         if (args[0].equals(INITIALIZE)) {
             initialize(args[1]);
-            return;
         } else if (args[0].equals("B")) {
             barcodeToSell(args);
-        } /*else if (args[0].equals("D")) {
-            barcodeToAdd(args);
-        }*/
+        } else if (args[0].equals(STOP_RUNNING)) {
+            return false;
+        }
+        return true;
     }
 
     private boolean barcodeToSell(String args[]) {
@@ -84,11 +84,7 @@ public class BarcodeScanner implements Runnable {
             return false;
         }
 
-        if (sold > quantity) {
-            Log.e("Produktu " + args[2] + " o kodzie: " + args[1] + "\n, nie ma w magazynie");
-            newQuantity = 0;
-        } else
-            newQuantity = quantity - sold;
+        newQuantity = quantity - sold;
         StringBuilder toSend = new StringBuilder("29");
         String barcode = "00000" + product.getCode();
         String tmpQuantity = "00" + (sold * 1000) + "";
@@ -99,7 +95,7 @@ public class BarcodeScanner implements Runnable {
         toSend.append(checkDigit + "");
 
         Log.i("Skaner wysyła na kasę: " + toSend.toString());
-        if (newQuantity == 0) {
+        if (newQuantity <= 0) {
             BluetoothClient.addToSendQueue("EZQ:" + args[1]);
         } else {
             BluetoothClient.addToSendQueue("BSS");
@@ -115,8 +111,6 @@ public class BarcodeScanner implements Runnable {
             Log.e("SCANNER: SerialPortException on send");
             return false;
         }
-
-
         product.setQuantity(newQuantity);
         toView.add(ProductsPanel.DATA_CHANGED);
         return true;
