@@ -1,0 +1,179 @@
+package pl.edu.pw.elka.sgalazka.inz.server.bluetooth;
+
+import pl.edu.pw.elka.sgalazka.inz.server.database.DatabaseManager;
+import pl.edu.pw.elka.sgalazka.inz.server.Log.Log;
+import pl.edu.pw.elka.sgalazka.inz.server.view.ProductsPanel;
+
+import javax.bluetooth.RemoteDevice;
+import javax.bluetooth.UUID;
+import javax.microedition.io.Connector;
+import javax.microedition.io.StreamConnection;
+import javax.microedition.io.StreamConnectionNotifier;
+import java.io.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+/**
+ * Created by ga��zka on 2015-10-08.
+ */
+public class BluetoothServer implements Runnable {
+
+    private BlockingQueue<String> toScanner;
+    private BlockingQueue<String> toClient;
+    private BlockingQueue<String> toView;
+    private BufferedReader in;
+    private StreamConnectionNotifier streamConnNotifier;
+    private RemoteDevice remoteDevice;
+    private BluetoothClient client;
+    private static StreamConnection connection;
+    private static boolean running;
+    private final static Object lock = new Object();
+    private boolean connected =false;
+
+    public BluetoothServer(BlockingQueue<String> toScanner, BlockingQueue<String> toView) {
+        this.toScanner = toScanner;
+        this.toView = toView;
+        toClient = new LinkedBlockingQueue<>();
+        running = true;
+    }
+
+    @Override
+    public void run() {
+        while (getRunning()) {
+            try {
+                startServer();
+            } catch (IOException e) {
+                e.printStackTrace();
+                break;
+            }
+            while (getRunning()) {
+                try {
+                    String lineRead = in.readLine();
+                    //Log.i("Serwer otrzymał: " + lineRead);
+                    if ((lineRead == null || lineRead.isEmpty() || lineRead.equals("null")) && connected)
+                        break;
+
+                    handleMessage(lineRead);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            try {
+                streamConnNotifier.close();
+                in.close();
+                connection.close();
+                client.setRunning(false);
+                toClient.add(BluetoothClient.STOP_RUNNING);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("Server stops running");
+    }
+
+    private void startServer() throws IOException {
+        UUID uuid = new UUID("0000110100001000800000805F9B34FB", false);
+
+        String connectionString = "btspp://localhost:" + uuid + ";name=Sample SPP Server";
+
+        streamConnNotifier = (StreamConnectionNotifier) Connector.open(connectionString);
+
+        Log.i("Serwer Bluetooth oczekuje na klientów...");
+        connection = streamConnNotifier.acceptAndOpen();
+
+        remoteDevice = RemoteDevice.getRemoteDevice(connection);
+        Log.i("Serwer Bluetooth łączy się z urządzeniem: " + remoteDevice.getFriendlyName(true) + " o adresie: " + remoteDevice.getBluetoothAddress());
+
+        InputStream inStream = connection.openInputStream();
+        in = new BufferedReader(new InputStreamReader(inStream));
+    }
+
+    private void handleMessage(String message) throws IOException {
+        if (message==null || message.isEmpty() || message.equals("") || message.equals("null")) {
+            return;
+        }
+        String splitted[] = message.split(":");
+        if (message.charAt(0) == 'B') {
+            toScanner.add(message);
+        } else if (message.charAt(0) == 'D') {
+            Log.i("to database: " + message);
+            addToDatabase(message);
+        } else if (message.equals("start")) {
+            client = new BluetoothClient(toClient);
+            client.runClient(remoteDevice);
+            client.start();
+            Log.i("Otrzymano wiadomosc startowa");
+            connected=true;
+            toClient.add(message);
+        } else if (message.equals("HeartBeat")) {
+            toClient.add(message);
+        } else if (splitted[0].equals("GPL")) {
+            Log.i("sending list of products");
+            sendListOfProducts(message);
+        }
+    }
+
+    public static void setRunning(boolean val) {
+        synchronized (lock) {
+            running = val;
+            if (!val) {
+                //Thread.interrupted();
+                if (connection != null) {
+                    try {
+                        connection.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean getRunning() {
+        synchronized (lock) {
+            return running;
+        }
+    }
+
+    private void addToDatabase(String msg) {
+
+        Runnable addToDatabaseCallback = new Runnable() {
+            @Override
+            public void run() {
+                if (DatabaseManager.getInstance().addFromBluetooth(msg)) {
+                    toView.add(ProductsPanel.DATA_CHANGED);
+                    toClient.add("DAS");
+                } else {
+                    String splitted[] = msg.split(":");
+                    toClient.add("EEX:" + splitted[1] + ":" + splitted[2]);
+                }
+            }
+        };
+        Thread thread = new Thread(addToDatabaseCallback);
+        thread.start();
+    }
+
+    private void sendListOfProducts(String msg) {
+        Runnable sendListOfProductsCallback = new Runnable() {
+            @Override
+            public void run() {
+                String splitted[] = msg.split(":");
+                String tmp;
+                if (splitted[1].equals("-1")) {
+                    tmp = DatabaseManager.getInstance().getAllAsString();
+                } else
+                    tmp = DatabaseManager.getInstance().getByQuantityAsString(Integer.parseInt(splitted[1]));
+                if (tmp.isEmpty()) {
+                    BluetoothClient.addToSendQueue("ERR");
+                    return;
+                }
+                String toSend = new StringBuilder().append(splitted[0]).append(":").append(splitted[1])
+                        .append(":").append(tmp).toString();
+                System.out.println(toSend);
+                toClient.add(toSend);
+            }
+        };
+        Thread thread = new Thread(sendListOfProductsCallback);
+        thread.start();
+    }
+}
